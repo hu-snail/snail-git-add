@@ -1,0 +1,55 @@
+{
+  "name": "snail-git-add",
+  "version": "1.0.0",
+  "description": "Interactive git add, commit and push tool with conventional commits and remote checks",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "snail-git-add": "bin/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node --transpile-only src/cli.ts",
+    "prepublishOnly": "npm run build",
+    "start": "node bin/cli.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "git",
+    "interactive",
+    "add",
+    "commit",
+    "push",
+    "conventional-commits",
+    "remote",
+    "branch",
+    "cli",
+    "snail-admin"
+  ],
+  "author": "snail-admin",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/snail-admin/git-add.git"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^9.5.0",
+    "inquirer": "^8.2.6",
+    "simple-git": "^3.19.1"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^20.10.5",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
