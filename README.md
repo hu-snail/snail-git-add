@@ -290,15 +290,3 @@ npm run dev
 # 运行测试
 npm test
 ```
-
-## 📞 支持
-
-如果遇到问题或有建议，请：
-
-1. 查看 [Issues](https://github.com/snail-admin/git-add/issues) 是否已有相关讨论
-2. 提交新的 [Issue](https://github.com/snail-admin/git-add/issues/new)
-3. 发送邮件到：support@snail-admin.com
-
----
-
-**Happy Coding!** 🎉
