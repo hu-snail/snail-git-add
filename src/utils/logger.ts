@@ -2,7 +2,7 @@ import chalk from 'chalk';
 
 export class Logger {
   static info(message: string): void {
-    console.log(chalk.blue(`ℹ️  ${message}`));
+    console.log(chalk.blue(`🌴  ${message}`));
   }
 
   static success(message: string): void {
@@ -22,7 +22,7 @@ export class Logger {
   }
 
   static progress(message: string): void {
-    process.stdout.write(chalk.blue(`🔄 ${message}`));
+    process.stdout.write(chalk.blue(`🍡 ${message}`));
   }
 
   static clearLine(): void {

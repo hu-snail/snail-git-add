@@ -354,7 +354,7 @@ export class InteractiveGitAdd implements InteractiveGitAddInterface {
         validate: (answer: string[]) => {
           const totalSelected = answer.length + stagedFiles.length;
           if (totalSelected === 0) {
-            return '请至少选择一个文件';
+            return Logger.warning('请至少选择一个文件');
           }
           return true;
         }
@@ -418,7 +418,7 @@ export class InteractiveGitAdd implements InteractiveGitAddInterface {
     try {
       // 重置选择的文件
       this.resetSelectedFiles();
-
+      console.log(chalk.green.bold(`\n👏 欢迎使用 snail-git-add@${version} 交互式 Git 工具\n`));
       // 检查是否在 git 仓库中
       const isRepo = await this.statusModule.checkIsRepo();
       if (!isRepo) {
