@@ -505,42 +505,18 @@ export class InteractiveGitAdd implements InteractiveGitAddInterface {
   }
 
   /**
-   * 显示推送进度 - 绿色进度条
+   * 显示推送 loading 状态
    */
-  private displayPushProgress(progress: number, total: number): void {
-    const percentage = Math.min(100, Math.round((progress / total) * 100));
-    const barLength = 20;
-    const filledLength = Math.min(barLength, Math.round(barLength * progress / total));
+  private showPushLoading(): NodeJS.Timeout {
+    const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+    let i = 0;
     
-    // 使用绿色进度条
-    const completedBar = chalk.green('█'.repeat(filledLength));
-    const remainingBar = chalk.gray('░'.repeat(barLength - filledLength));
-    const bar = completedBar + remainingBar;
-
-    process.stdout.write(`\r${chalk.green('推送进度:')} [${bar}] ${percentage}%`);
-
-    if (progress >= total) {
-      process.stdout.write('\n');
-    }
-  }
-
-  /**
-   * 显示推送动画
-   */
-  private async showPushAnimation(): Promise<void> {
-    const totalSteps = 10;
+    const interval = setInterval(() => {
+      process.stdout.write(`\r${chalk.blue(frames[i])} ${chalk.blue('推送中...')}`);
+      i = (i + 1) % frames.length;
+    }, 100);
     
-    // 显示初始进度
-    this.displayPushProgress(0, totalSteps);
-    
-    // 模拟推送过程
-    for (let i = 1; i <= totalSteps; i++) {
-      await new Promise(resolve => setTimeout(resolve, 200));
-      this.displayPushProgress(i, totalSteps);
-    }
-    
-    // 确保显示 100%
-    this.displayPushProgress(totalSteps, totalSteps);
+    return interval;
   }
 
   /**
@@ -648,39 +624,51 @@ export class InteractiveGitAdd implements InteractiveGitAddInterface {
       // 执行推送
       console.log(chalk.blue('\n开始推送...'));
 
-      // 显示推送动画
-      await this.showPushAnimation();
+      // 显示 loading 状态
+      const loadingInterval = this.showPushLoading();
 
-      // 执行实际的推送命令
-      const pushResult: PushResult = await this.git.push();
+      try {
+        // 执行实际的推送命令
+        const pushResult: PushResult = await this.git.push();
 
-      console.log(chalk.green.bold('\n✅ 推送成功！'));
+        // 清除 loading 状态
+        clearInterval(loadingInterval);
+        process.stdout.write('\r'); // 清除当前行
 
-      // 显示推送结果摘要
-      console.log(chalk.blue.bold('\n📋 推送摘要：'));
-      console.log(`分支：${chalk.cyan(status.current)}`);
-      console.log(`远程：${chalk.cyan(pushResult.repo?.toString() || 'origin')}`);
-      console.log(`推送提交数：${chalk.green(status.ahead)}`);
+        console.log(chalk.green.bold('✅ 推送成功！'));
 
-      // 安全地访问哈希值
-      if (pushResult.update && pushResult.update.hash && typeof pushResult.update.hash.to === 'string') {
-        console.log(`最新提交：${chalk.cyan(pushResult.update.hash.to.slice(0, 8))}`);
-      } else {
-        // 如果无法从推送结果获取哈希，尝试从最后一次提交获取
-        const latestCommit = await this.git.log(['-1']);
-        if (latestCommit.latest) {
-          console.log(`最新提交：${chalk.cyan(latestCommit.latest.hash.slice(0, 8))}`);
+        // 显示推送结果摘要
+        console.log(chalk.blue.bold('\n📋 推送摘要：'));
+        console.log(`分支：${chalk.cyan(status.current)}`);
+        console.log(`远程：${chalk.cyan(pushResult.repo?.toString() || 'origin')}`);
+        console.log(`推送提交数：${chalk.green(status.ahead)}`);
+
+        // 安全地访问哈希值
+        if (pushResult.update && pushResult.update.hash && typeof pushResult.update.hash.to === 'string') {
+          console.log(`最新提交：${chalk.cyan(pushResult.update.hash.to.slice(0, 8))}`);
+        } else {
+          // 如果无法从推送结果获取哈希，尝试从最后一次提交获取
+          const latestCommit = await this.git.log(['-1']);
+          if (latestCommit.latest) {
+            console.log(`最新提交：${chalk.cyan(latestCommit.latest.hash.slice(0, 8))}`);
+          }
         }
+
+        // 重置选择的文件
+        this.resetSelectedFiles();
+
+        // 显示后续建议
+        console.log(chalk.blue.bold('\n💡 后续建议：'));
+        console.log('• 在代码仓库中检查推送的更改');
+        console.log('• 如有需要，创建 Pull Request');
+        console.log('• 通知团队成员相关变更');
+
+      } catch (error) {
+        // 清除 loading 状态
+        clearInterval(loadingInterval);
+        process.stdout.write('\r'); // 清除当前行
+        throw error;
       }
-
-      // 重置选择的文件
-      this.resetSelectedFiles();
-
-      // 显示后续建议
-      console.log(chalk.blue.bold('\n💡 后续建议：'));
-      console.log('• 在代码仓库中检查推送的更改');
-      console.log('• 如有需要，创建 Pull Request');
-      console.log('• 通知团队成员相关变更');
 
     } catch (error) {
       this.resetSelectedFiles();
@@ -694,7 +682,6 @@ export class InteractiveGitAdd implements InteractiveGitAddInterface {
   async addSelectedFiles(options: GitAddOptions = {}): Promise<void> {
     const {
       showStatusAfterAdd = true,
-      selectAllByDefault = false,
       autoCommit = false,
       autoPush = false
     } = options;
