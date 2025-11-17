@@ -1,13 +1,7 @@
 #!/usr/bin/env node
 
 const { execSync } = require('child_process');
-const readline = require('readline');
-
-// 创建交互式输入接口
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
+const inquirer = require('inquirer');
 
 // 颜色输出函数
 const colors = {
@@ -58,41 +52,81 @@ function updateVersion(versionType) {
   return runCommand(`npm version ${versionType}`);
 }
 
+function checkNpmLogin() {
+  log(colors.blue, '检查npm登录状态...');
+  try {
+    const username = execSync('npm whoami', { encoding: 'utf8', stdio: 'pipe' });
+    log(colors.green, `已登录npm账户：${username.trim()}`);
+    return true;
+  } catch {
+    log(colors.red, '未登录npm账户');
+    return false;
+  }
+}
+
+function loginNpm() {
+  log(colors.yellow, '请登录npm账户：');
+  return runCommand('npm login');
+}
+
 function deploy() {
+  // 步骤0：检查npm登录状态
+  if (!checkNpmLogin()) {
+    if (!loginNpm()) {
+      log(colors.red, 'npm登录失败，无法继续部署');
+      process.exit(1);
+    }
+  }
+
   // 步骤1：检查Git状态
   if (!checkGitStatus()) {
     process.exit(1);
   }
 
   // 步骤2：询问版本更新类型
-  log(colors.yellow, '请选择版本更新类型 (patch/minor/major) [patch]: ');
-  rl.question('', (versionType) => {
-    versionType = versionType || 'patch';
-
-    // 确保版本类型有效
-    const validTypes = ['patch', 'minor', 'major'];
-    if (!validTypes.includes(versionType)) {
-      log(colors.red, `无效的版本类型: ${versionType}，必须是 ${validTypes.join(', ')} 之一`);
-      rl.close();
-      process.exit(1);
-      return;
+  inquirer.prompt([
+    {
+      type: 'list',
+      name: 'versionType',
+      message: '请选择版本更新类型：',
+      choices: [
+        {
+          name: 'patch (补丁版本) - 修复bug，向后兼容',
+          value: 'patch'
+        },
+        {
+          name: 'minor (次版本) - 新增功能，向后兼容',
+          value: 'minor'
+        },
+        {
+          name: 'major (主版本) - 破坏性更新，不向后兼容',
+          value: 'major'
+        }
+      ],
+      default: 'patch'
     }
+  ]).then((answers) => {
+    const versionType = answers.versionType;
 
     // 步骤3：更新版本号
     if (!updateVersion(versionType)) {
-      rl.close();
       process.exit(1);
       return;
     }
 
     // 步骤4：运行测试
     log(colors.blue, '运行测试...');
-    if (!runCommand('npm test')) {
-      log(colors.yellow, '测试失败，但仍可继续部署？');
-      rl.question('是否继续？(y/n) [n]: ', (continueDeploy) => {
-        if (continueDeploy.toLowerCase() !== 'y') {
+    if (!runCommand('npm run test')) {
+      inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'continueDeploy',
+          message: '测试失败，但仍可继续部署？',
+          default: false
+        }
+      ]).then((testAnswers) => {
+        if (!testAnswers.continueDeploy) {
           log(colors.red, '部署已取消');
-          rl.close();
           process.exit(1);
           return;
         }
@@ -107,7 +141,6 @@ function deploy() {
     // 步骤5：构建项目
     log(colors.blue, '构建项目...');
     if (!runCommand('npm run build')) {
-      rl.close();
       process.exit(1);
       return;
     }
@@ -127,8 +160,6 @@ function deploy() {
     } else {
       log(colors.red, '❌ Git推送失败！');
     }
-
-    rl.close();
   }
 }
 
