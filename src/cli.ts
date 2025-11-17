@@ -1,4 +1,3 @@
-// src/cli.ts
 import { Command } from 'commander';
 import { interactiveGitAdd, createInteractiveGitAdd } from './index';
 import chalk from 'chalk';
@@ -18,6 +17,10 @@ program
   .option('--commit-only', '只执行提交（不添加文件）', false)
   .option('--push-only', '只执行推送（不添加或提交文件）', false)
   .option('--check-remote', '只检查远程分支状态', false)
+  // 新增选项
+  .option('--branches', '分支管理', false)
+  .option('--log', '查看提交历史', false)
+  .option('--undo', '撤销操作', false)
   .action(async (options) => {
     try {
       const gitAdd = options.cwd ? createInteractiveGitAdd(options.cwd) : interactiveGitAdd;
@@ -29,7 +32,7 @@ program
 
       if (options.checkRemote) {
         const branches = await gitAdd.checkRemoteBranches();
-        gitAdd['displayRemoteBranchesStatus'](branches);
+        gitAdd.displayRemoteBranchesStatus(branches);
         return;
       }
 
@@ -40,6 +43,24 @@ program
 
       if (options.pushOnly) {
         await gitAdd.interactivePush();
+        return;
+      }
+
+      // 新增分支管理
+      if (options.branches) {
+        await gitAdd.manageBranches();
+        return;
+      }
+
+      // 新增查看提交历史
+      if (options.log) {
+        await gitAdd.showCommitHistory();
+        return;
+      }
+
+      // 新增撤销操作
+      if (options.undo) {
+        await gitAdd.undoChanges();
         return;
       }
 

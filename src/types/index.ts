@@ -37,6 +37,38 @@ export interface RemoteBranchInfo {
   needsMerge: boolean;
 }
 
+export interface SelectedFiles {
+  addedFiles: string[];
+  committedFiles?: string[];
+}
+
+export interface StashItem {
+  id: string;
+  message: string;
+  branch: string;
+  date: string;
+}
+
+export interface TagInfo {
+  name: string;
+  commit: string;
+  message?: string;
+}
+
+export interface RemoteInfo {
+  name: string;
+  url: string;
+  type: string;
+}
+
+export interface GitToolConfig {
+  autoFetch: boolean;
+  defaultCommitType: string;
+  enableEmojis: boolean;
+  pushAfterCommit: boolean;
+  branchNamingConvention: string;
+}
+
 export interface InteractiveGitAddInterface {
   addSelectedFiles(options?: GitAddOptions): Promise<void>;
   getModifiedFiles(): Promise<FileStatus[]>;
@@ -44,10 +76,9 @@ export interface InteractiveGitAddInterface {
   interactiveCommit(): Promise<void>;
   interactivePush(): Promise<void>;
   checkRemoteBranches(): Promise<RemoteBranchInfo[]>;
-}
-
-// 添加新的接口来跟踪选择的文件
-export interface SelectedFiles {
-  addedFiles: string[];      // 用户选择的文件
-  committedFiles?: string[]; // 实际提交的文件（可能和 addedFiles 相同）
+  displayRemoteBranchesStatus(branches: RemoteBranchInfo[]): void;
+  manageBranches(): Promise<void>;
+  showCommitHistory(): Promise<void>;
+  undoChanges(): Promise<void>;
+  showMainMenu(): Promise<void>;
 }
