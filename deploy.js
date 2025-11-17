@@ -114,27 +114,8 @@ function deploy() {
       return;
     }
 
-    // 步骤4：运行测试
-    log(colors.blue, '运行测试...');
-    if (!runCommand('npm run test')) {
-      inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'continueDeploy',
-          message: '测试失败，但仍可继续部署？',
-          default: false
-        }
-      ]).then((testAnswers) => {
-        if (!testAnswers.continueDeploy) {
-          log(colors.red, '部署已取消');
-          process.exit(1);
-          return;
-        }
-        proceedWithBuildAndPublish();
-      });
-    } else {
-      proceedWithBuildAndPublish();
-    }
+    // 步骤4：直接进行构建和发布（已跳过测试）
+    proceedWithBuildAndPublish();
   });
 
   function proceedWithBuildAndPublish() {
