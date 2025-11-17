@@ -5,13 +5,13 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "snail-git-add": "bin/cli.js"
+    "snail-git-add": "bin/index.js"
   },
   "scripts": {
     "build": "tsc",
     "dev": "ts-node --transpile-only src/cli.ts",
     "prepublishOnly": "npm run build",
-    "start": "node bin/cli.js",
+    "start": "node bin/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
