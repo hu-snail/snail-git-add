@@ -46,8 +46,9 @@ function checkGitStatus() {
     }
     log(colors.green, '工作目录干净，可以继续部署。');
     return true;
-  } catch {
+  } catch (error) {
     log(colors.red, '检查Git状态失败');
+    log(colors.red, `错误信息: ${error.message}`);
     return false;
   }
 }
@@ -64,7 +65,8 @@ function deploy() {
   }
 
   // 步骤2：询问版本更新类型
-  rl.question(log(colors.yellow, '请选择版本更新类型 (patch/minor/major) [patch]: '), (versionType) => {
+  log(colors.yellow, '请选择版本更新类型 (patch/minor/major) [patch]: ');
+  rl.question('', (versionType) => {
     versionType = versionType || 'patch';
 
     // 确保版本类型有效
