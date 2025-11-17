@@ -1,13 +1,13 @@
 {
   "name": "snail-git-add",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Interactive git add, commit and push tool with conventional commits and remote checks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
     "snail-git-add": "bin/index.js"
   },
-  "scripts": { 
+  "scripts": {
     "build": "tsc",
     "dev": "ts-node --transpile-only src/cli.ts",
     "prepublishOnly": "npm run build",
