@@ -507,21 +507,40 @@ export class InteractiveGitAdd implements InteractiveGitAddInterface {
   /**
    * 显示推送进度 - 绿色进度条
    */
-  private displayPushProgress(progress: any, total: number): void {
-    const percentage = total > 0 ? Math.round((progress / total) * 100) : 0;
+  private displayPushProgress(progress: number, total: number): void {
+    const percentage = Math.min(100, Math.round((progress / total) * 100));
     const barLength = 20;
-    const filledLength = Math.round(barLength * progress / total);
+    const filledLength = Math.min(barLength, Math.round(barLength * progress / total));
     
     // 使用绿色进度条
     const completedBar = chalk.green('█'.repeat(filledLength));
     const remainingBar = chalk.gray('░'.repeat(barLength - filledLength));
     const bar = completedBar + remainingBar;
 
-    process.stdout.write(`\r${chalk.green('推送进度:')} [${bar}] ${percentage}% (${progress}/${total})`);
+    process.stdout.write(`\r${chalk.green('推送进度:')} [${bar}] ${percentage}%`);
 
-    if (progress === total) {
+    if (progress >= total) {
       process.stdout.write('\n');
     }
+  }
+
+  /**
+   * 显示推送动画
+   */
+  private async showPushAnimation(): Promise<void> {
+    const totalSteps = 10;
+    
+    // 显示初始进度
+    this.displayPushProgress(0, totalSteps);
+    
+    // 模拟推送过程
+    for (let i = 1; i <= totalSteps; i++) {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      this.displayPushProgress(i, totalSteps);
+    }
+    
+    // 确保显示 100%
+    this.displayPushProgress(totalSteps, totalSteps);
   }
 
   /**
@@ -629,13 +648,10 @@ export class InteractiveGitAdd implements InteractiveGitAddInterface {
       // 执行推送
       console.log(chalk.blue('\n开始推送...'));
 
-      // 模拟推送进度
-      const totalSteps = 5;
-      for (let i = 0; i <= totalSteps; i++) {
-        this.displayPushProgress(i, totalSteps);
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
+      // 显示推送动画
+      await this.showPushAnimation();
 
+      // 执行实际的推送命令
       const pushResult: PushResult = await this.git.push();
 
       console.log(chalk.green.bold('\n✅ 推送成功！'));
@@ -678,6 +694,7 @@ export class InteractiveGitAdd implements InteractiveGitAddInterface {
   async addSelectedFiles(options: GitAddOptions = {}): Promise<void> {
     const {
       showStatusAfterAdd = true,
+      selectAllByDefault = false,
       autoCommit = false,
       autoPush = false
     } = options;
