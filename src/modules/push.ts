@@ -73,6 +73,54 @@ export class PushModule extends GitBase {
 
       // 显示推送信息
       Logger.info(`准备推送 ${status.ahead} 个提交到远程`);
+      
+      // 显示要推送的提交和文件列表
+      if (status.ahead > 0 && status.tracking) {
+        try {
+          // 获取本地分支与远程分支的差异提交
+          const log = await this.git.log([`${status.tracking}..HEAD`]);
+          
+          Logger.info('要推送的提交：');
+          for (let index = 0; index < log.all.length; index++) {
+            const commit = log.all[index];
+            console.log(`\n提交 ${index + 1}:`);
+            console.log(`哈希：${commit.hash.slice(0, 8)}`);
+            console.log(`作者：${commit.author_name}`);
+            console.log(`日期：${commit.date}`);
+            console.log(`信息：${commit.message}`);
+            
+            // 获取该提交的文件列表
+            console.log('修改的文件：');
+            let files: string[] = [];
+            if (commit.diff?.files) {
+              files = commit.diff.files.map((file: any) => file.path);
+            }
+            
+            if (files.length > 0) {
+              files.forEach(file => {
+                console.log(`  - ${file}`);
+              });
+            } else {
+              // 如果diff.files不存在，尝试通过git show获取
+              try {
+                const fileList = await this.git.show(['--name-only', '--pretty=format:', commit.hash]);
+                const fileArray = fileList.split('\n').filter(line => line.trim() !== '');
+                if (fileArray.length > 0) {
+                  fileArray.forEach(file => {
+                    console.log(`  - ${file}`);
+                  });
+                } else {
+                  console.log('  - 没有文件修改记录');
+                }
+              } catch {
+                console.log('  - 无法获取文件列表');
+              }
+            }
+          }
+        } catch {
+          Logger.warning('无法获取提交详情');
+        }
+      }
 
       const { confirmPush } = await inquirer.prompt([
         {

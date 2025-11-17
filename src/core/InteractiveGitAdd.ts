@@ -1,5 +1,5 @@
-// src/core/InteractiveGitAdd.ts
 import inquirer from 'inquirer';
+import chalk from 'chalk';
 import { StatusModule } from '../modules/status';
 import { CommitModule } from '../modules/commit';
 import { PushModule } from '../modules/push';
@@ -282,15 +282,16 @@ export class InteractiveGitAdd implements InteractiveGitAddInterface {
    * 格式化文件状态显示
    */
   private formatFileStatus(file: FileStatus): string {
-    const statusMap: { [key: string]: string } = {
-      'M': '修改',
-      'A': '新增',
-      'D': '删除',
-      'R': '重命名'
+    const statusMap: { [key: string]: { text: string; color: (text: string) => string } } = {
+      'M': { text: '修改', color: chalk.yellow },
+      'A': { text: '新增', color: chalk.green },
+      'D': { text: '删除', color: chalk.red },
+      'R': { text: '重命名', color: chalk.blue }
     };
 
-    const statusText = statusMap[file.index] || file.index;
-    const stagedIndicator = file.isStaged ? ' [已暂存]' : '';
+    const statusInfo = statusMap[file.index] || { text: file.index, color: chalk.white };
+    const statusText = statusInfo.color(statusInfo.text);
+    const stagedIndicator = file.isStaged ? ' [' + chalk.green('已暂存') + ']' : '';
     return `[${statusText}] ${file.path}${stagedIndicator}`;
   }
 
