@@ -20,7 +20,17 @@
 - 🛡️ **类型安全** - 使用 TypeScript 开发，提供完整的类型定义
 - 📦 **模块化设计** - 清晰的代码结构，易于扩展和维护
 
-## 📦 安装
+## 📦 全局安装
+```bash
+npm install -g snail-git-add
+# 使用 yarn
+yarn add -D snail-git-add
+# 使用 pnpm
+pnpm add -D snail-git-add
+# 使用bun
+bun install -D snail-git-add
+```
+## 📦 局部安装
 
 ```bash
 # 使用 npm
