@@ -1,6 +1,6 @@
 {
   "name": "snail-git-add",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Interactive git add, commit and push tool with conventional commits and remote checks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
