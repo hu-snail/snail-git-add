@@ -411,7 +411,6 @@ export class InteractiveGitAdd implements InteractiveGitAddInterface {
   async addSelectedFiles(options: GitAddOptions = {}): Promise<void> {
     const {
       showStatusAfterAdd = true,
-      selectAllByDefault = false,
       autoCommit = false,
       autoPush = false
     } = options;
